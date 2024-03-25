@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRUD App</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f1f1f1;
+        margin: 0;
+        padding: 0;
+    }
+    h2 {
+        text-align: center;
+        margin-top: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+    }
+    table, th, td {
+        border: 1px solid black;
+        padding: 10px;
+        text-align: left;
+    }
+    th {
+        background-color: #333;
+        color: white;
+    }
+    #userForm {
+        border: 1px solid #ccc;
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 30px;
+        width: 300px;
+        margin: auto;
+    }
+    #userForm label {
+        display: block;
+        margin-bottom: 5px;
+    }
+    #userForm input[type="text"] {
+        width: calc(100% - 22px);
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    #addBtn {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+    }
+    #editFormContainer {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+        background-color: #ffffff;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #000000;
+        width: 40%;
+        border-radius: 5px;
+        position: relative;
+    }
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+    }
+    .editBtn, .deleteBtn {
+        padding: 6px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-right: 5px;
+    }
+    .editBtn {
+        background-color: #4CAF50;
+        color: white;
+    }
+    .deleteBtn {
+        background-color: #f44336;
+        color: white;
+    }
+    .editBtn:hover {
+        background-color: #9cb69d;
+    }
+    .deleteBtn:hover {
+        background-color: #834642;
+    }
+    #editFormContainer input[type="text"] {
+        width: calc(100% - 22px);
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    #saveEditBtn, #cancelEditBtn {
+        width: 48%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    #saveEditBtn {
+        background-color: #4CAF50;
+        color: white;
+        margin-right: 2%;
+    }
+    #cancelEditBtn {
+        background-color: #f44336;
+        color: white;
+    }
+    #modalAlert .modal-content {
+        background-color: rgb(255, 255, 255);
+        padding: 0;
+        border-radius: 5px;
+    }
+    #alertTitle {
+        padding: 10px 15px;
+        border-radius: 5px 5px 0 0;
+        margin: 0;
+    }
+    #alertContent {
+        padding: 15px;
+    }
+    .alert-type {
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin: 0;
+    }
+    .alert-type.added
+    {
+        background-color: #4CAF50;
+    }
+
+.alert-type.updated {
+    background-color: #87CEEB;
+}
+.alert-type.deleted {
+    background-color: #f44336;
+}
+.alert-type.warning {
+    background-color: #FFD700;
+}
+#modalAlert {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.modal-box {
+    position: relative;
+    margin: 15% auto;
+    width: 40%;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+#resetBtn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #FFD700;
+    color: rgb(255, 255, 255, 255);
+    cursor: pointer;
+}
+#resetBtn:hover {
+    background-color: #FFDA4D;
+}
+#pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+.pageBtn {
+    padding: 8px 16px;
+    margin: 0 5px;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+    color: #333;
+    cursor: pointer;
+}
+.pageBtn:hover {
+    background-color: #ddd;
+}
+
+/* Aturan CSS untuk baris ganjil */
+#userTable tbody tr:nth-child(odd) {
+    background-color: white; /* Putih untuk baris ganjil */
+}
+
+/* Aturan CSS untuk baris genap */
+#userTable tbody tr:nth-child(even) {
+    background-color: #f1f1f1; /* Abu-abu untuk baris genap */
+}
+
+#totalEntries{
+    text-align: center;
+}
+
+</style>
+</head>
+<body>
+
+<h2>JAMA DATA INPUT</h2>
+
+<div id="totalEntries"></div> <!-- Tambahkan elemen ini -->
+
+<form id="userForm">
+<label for="username">Nama:</label>
+<input type="text" id="username" name="username"><br>
+<label for="nim">NIM:</label>
+<input type="text" id="nim" name="nim"><br>
+<label for="address">Address:</label>
+<input type="text" id="address" name="address"><br>
+<button type="button" id="addBtn">Add User</button>
+<button type="button" id="resetBtn">Reset</button>
+</form>
+
+<div id="editFormContainer">
+<h3>Edit User</h3>
+<form id="editForm">
+    <label for="editUsername">Nama:</label>
+    <input type="text" id="editUsername" name="editUsername"><br>
+    <label for="editNim">NIM:</label>
+    <input type="text" id="editNim" name="editNim"><br>
+    <label for="editAddress">Address:</label>
+    <input type="text" id="editAddress" name="editAddress"><br>
+    <button type="button" id="saveEditBtn">Save</button>
+    <button type="button" id="cancelEditBtn">Cancel</button>
+</form>
+</div>
+
+<!-- Modal box for alerts -->
+<div id="modalAlert" class="modal">
+<div class="modal-content">
+    <div id="alertTitle"></div>
+    <div id="alertContent">
+        <span class="close">&times;</span>
+        <p id="modalMessage"></p>
+    </div>
+</div>
+</div>
+
+<table id="userTable">
+<thead>
+    <tr>
+        <th style="background-color: #333;">Username</th>
+        <th style="background-color: #333;">NIM</th>
+        <th style="background-color: #333;">Address</th>
+        <th style="background-color: #333;">Action</th>
+    </tr>
+</thead>
+<tbody>
+    <!-- User data will be displayed here -->
+</tbody>
+</table>
+
+<div id="pagination"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function(){
+        var users = [];
+        var currentPage = 1;
+        var usersPerPage = 9;
+        var currentIndex; // Variable to store the index of the user being edited
+    
+        function renderUsers(page) {
+            currentPage = page || 1; // Always render the first page after adding a new user
+            var startIndex = (currentPage - 1) * usersPerPage;
+            var endIndex = Math.min(startIndex + usersPerPage, users.length);
+            var html = "";
+    
+            for (var i = startIndex; i < endIndex; i++) {
+                html += "<tr>";
+                html += "<td>" + users[i].username + "</td>";
+                html += "<td>" + users[i].nim + "</td>";
+                html += "<td>" + users[i].address + "</td>";
+                html += "<td><button class='editBtn' data-index='" + i + "'>Edit</button> <button class='deleteBtn' data-index='" + i + "'>Delete</button></td>";
+                html += "</tr>";
+            }
+    
+            $('#userTable tbody').html(html);
+            renderPagination();
+        }
+    
+        function renderPagination() {
+            var totalPages = Math.ceil(users.length / usersPerPage);
+            var html = "";
+    
+            html += "<button class='pageBtn' data-page='1'>First</button>";
+    
+            for (var i = 1; i <= totalPages; i++) {
+                html += "<button class='pageBtn' data-page='" + i + "'>" + i + "</button>";
+            }
+    
+            html += "<button class='pageBtn' data-page='" + totalPages + "'>Last</button>";
+    
+            $('#pagination').html(html);
+        }
+
+        function isMaxUsersReached() {
+            return users.length >= 10;
+        }
+    
+        $('#addBtn').click(function(){
+    if (isMaxUsersReached()) {
+        showModalAlert("Warning", "Data Mahasiswa Penuh!", "warning");
+        return;
+    }
+
+    var username = $('#username').val().trim();
+    var nim = $('#nim').val().trim();
+    var address = $('#address').val().trim();
+
+    if (username === "" || nim === "" || address === "") {
+        showModalAlert("Error", "Data tidak lengkap. Mohon lengkapi semua field.", "warning");
+        return;
+    }
+
+    var user = { username: username, nim: nim, address: address };
+    users.push(user);
+    $('#username, #nim, #address').val(""); // Clear input fields
+
+    // Periksa apakah jumlah pengguna melebihi kapasitas halaman pertama
+    if (users.length > usersPerPage) {
+        currentPage++; // Jika ya, tambahkan satu halaman lagi
+    }
+
+    renderUsers(currentPage); // Render the user table with the new user on the current or next page
+
+    // Show green-colored alert for successful addition
+    showModalAlert("Added", "Berhasil menambahkan data baru!", "added");
+});
+
+    
+        $('#pagination').on('click', '.pageBtn', function(){
+            var page = parseInt($(this).data('page'));
+            renderUsers(page); // Render the specified page
+        });
+
+        $('#userTable').on('click', '.editBtn', function(){
+            var index = $(this).data('index');
+            currentIndex = index;
+            var user = users[index];
+            $('#editUsername').val(user.username);
+            $('#editNim').val(user.nim);
+            $('#editAddress').val(user.address);
+            $('#editFormContainer').fadeIn();
+        });
+
+        $('#saveEditBtn').click(function(){
+            var username = $('#editUsername').val().trim();
+            var nim = $('#editNim').val().trim();
+            var address = $('#editAddress').val().trim();
+    
+            if (username === "" || nim === "" || address === "") {
+                showModalAlert("Error", "Data tidak lengkap. Mohon lengkapi semua field.", "warning");
+                return;
+            }
+    
+            users[currentIndex] = { username: username, nim: nim, address: address };
+            renderUsers(currentPage);
+
+            // Show blue-colored alert for successful edit
+            showModalAlert("Updated", "Data berhasil diperbarui!", "updated");
+
+            $('#editFormContainer').fadeOut();
+        });
+
+        $('#userTable').on('click', '.deleteBtn', function(){
+            var index = $(this).data('index');
+            users.splice(index, 1);
+            renderUsers(currentPage);
+
+            // Show red-colored alert for successful deletion
+            showModalAlert("Deleted", "Data berhasil dihapus!", "deleted");
+        });
+
+        $('#resetBtn').click(function(){
+            users = [];
+            renderUsers();
+            $('#username, #nim, #address').val(""); // Clear input fields
+
+            showModalAlert("Reset", "Semua data telah direset!", "warning");
+        });
+
+        function showModalAlert(title, message, type) {
+            var alertTypeClass;
+            var alertTitleColor;
+        
+            switch(type) {
+                case "added":
+                    alertTypeClass = "added";
+                    alertTitleColor = "#4CAF50"; // Green color for added alert
+                    break;
+                case "updated":
+                    alertTypeClass = "updated";
+                    alertTitleColor = "#87CEEB"; // Sky blue color for updated alert
+                    break;
+                case "deleted":
+                    alertTypeClass = "deleted";
+                    alertTitleColor = "#f44336"; // Red color for deleted alert
+                    break;
+                case "warning":
+                    alertTypeClass = "warning";
+                    alertTitleColor = "#FFD700"; // Yellow color for warning alert
+                    break;
+                default:
+                    alertTypeClass = "warning";
+                    alertTitleColor = "#FFD700"; // Default to yellow color for unknown alert types
+            }
+        
+            $('#alertTitle').text(title).addClass('alert-type ' + alertTypeClass).css("background-color", alertTitleColor);
+            $('#modalMessage').text(message);
+            $('#modalAlert').fadeIn();
+            setTimeout(function() {
+                $('#modalAlert').fadeOut(); }, 2000);
+        }
+
+        // Event listener for cancel button in the edit form
+        $('#cancelEditBtn').click(function() {
+            $('#editFormContainer').fadeOut();
+        });
+
+        // Event listener for reset button
+        $('#resetBtn').click(function() {
+            $('#username, #nim, #address').val(""); // Clear input fields
+        });
+      
+        // Other functions remain unchanged
+        
+        function renderUsers(page) {
+    currentPage = page || 1; // Always render the first page after adding a new user
+    var startIndex = (currentPage - 1) * usersPerPage;
+    var endIndex = Math.min(startIndex + usersPerPage, users.length);
+    var html = "";
+
+    for (var i = startIndex; i < endIndex; i++) {
+        html += "<tr>";
+        html += "<td>" + users[i].username + "</td>";
+        html += "<td>" + users[i].nim + "</td>";
+        html += "<td>" + users[i].address + "</td>";
+        html += "<td><button class='editBtn' data-index='" + i + "'>Edit</button> <button class='deleteBtn' data-index='" + i + "'>Delete</button></td>";
+        html += "</tr>";
+    }
+
+    $('#userTable tbody').html(html);
+    renderPagination();
+
+    // Update total entries
+    $('#totalEntries').text("Total Entries: " + users.length);
+}
+
+    });
+</script>
+</body>
+</html>
