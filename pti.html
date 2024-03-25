@@ -305,46 +305,49 @@
 <script>
     $(document).ready(function(){
         var users = [];
-        var currentPage = 1;
-        var usersPerPage = 9;
-        var currentIndex; // Variable to store the index of the user being edited
-    
-        function renderUsers(page) {
-            currentPage = page || 1; // Always render the first page after adding a new user
-            var startIndex = (currentPage - 1) * usersPerPage;
-            var endIndex = Math.min(startIndex + usersPerPage, users.length);
-            var html = "";
-    
-            for (var i = startIndex; i < endIndex; i++) {
-                html += "<tr>";
-                html += "<td>" + users[i].username + "</td>";
-                html += "<td>" + users[i].nim + "</td>";
-                html += "<td>" + users[i].address + "</td>";
-                html += "<td><button class='editBtn' data-index='" + i + "'>Edit</button> <button class='deleteBtn' data-index='" + i + "'>Delete</button></td>";
-                html += "</tr>";
-            }
-    
-            $('#userTable tbody').html(html);
-            renderPagination();
-        }
-    
-        function renderPagination() {
-            var totalPages = Math.ceil(users.length / usersPerPage);
-            var html = "";
-    
-            html += "<button class='pageBtn' data-page='1'>First</button>";
-    
-            for (var i = 1; i <= totalPages; i++) {
-                html += "<button class='pageBtn' data-page='" + i + "'>" + i + "</button>";
-            }
-    
-            html += "<button class='pageBtn' data-page='" + totalPages + "'>Last</button>";
-    
-            $('#pagination').html(html);
+    var usersPerPage = 10;
+    var currentPage = 1; // Define currentPage outside the renderUsers function
+
+    function renderUsers(page) {
+        currentPage = page || 1; // Always render the first page after adding a new user
+        var startIndex = (currentPage - 1) * usersPerPage;
+        var endIndex = Math.min(startIndex + usersPerPage, users.length);
+        var html = "";
+
+        for (var i = startIndex; i < endIndex; i++) {
+            html += "<tr>";
+            html += "<td>" + users[i].username + "</td>";
+            html += "<td>" + users[i].nim + "</td>";
+            html += "<td>" + users[i].address + "</td>";
+            html += "<td><button class='editBtn' data-index='" + i + "'>Edit</button> <button class='deleteBtn' data-index='" + i + "'>Delete</button></td>";
+            html += "</tr>";
         }
 
+        $('#userTable tbody').html(html);
+        renderPagination();
+
+        // Update total entries
+        $('#totalEntries').text("Total Entries: " + users.length);
+    }
+
+    // Function to render pagination buttons
+    function renderPagination() {
+        var totalPages = Math.ceil(users.length / usersPerPage);
+        var html = "";
+
+        html += "<button class='pageBtn' data-page='1'>First</button>";
+
+        for (var i = 1; i <= totalPages; i++) {
+            html += "<button class='pageBtn' data-page='" + i + "'>" + i + "</button>";
+        }
+
+        html += "<button class='pageBtn' data-page='" + totalPages + "'>Last</button>";
+
+        $('#pagination').html(html);
+    }
+
         function isMaxUsersReached() {
-            return users.length >= 10;
+            return users.length >= 100;
         }
     
         $('#addBtn').click(function(){
@@ -366,18 +369,19 @@
     users.push(user);
     $('#username, #nim, #address').val(""); // Clear input fields
 
-    // Periksa apakah jumlah pengguna melebihi kapasitas halaman pertama
-    if (users.length > usersPerPage) {
-        currentPage++; // Jika ya, tambahkan satu halaman lagi
+    // Check if the new user exceeds the current page limit
+    var totalPages = Math.ceil(users.length / usersPerPage);
+    if (totalPages > currentPage) {
+        currentPage = totalPages; // Reset to the last page if the new user exceeds the current page limit
     }
 
-    renderUsers(currentPage); // Render the user table with the new user on the current or next page
+    renderUsers(currentPage); // Render the user table with the new user on the current or last page
 
     // Show green-colored alert for successful addition
     showModalAlert("Added", "Berhasil menambahkan data baru!", "added");
 });
 
-    
+   
         $('#pagination').on('click', '.pageBtn', function(){
             var page = parseInt($(this).data('page'));
             renderUsers(page); // Render the specified page
